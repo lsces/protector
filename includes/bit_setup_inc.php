@@ -1,5 +1,6 @@
 <?php
-global $gBitSystem, $gBitSmarty;
+use Bitweaver\Liberty\LibertyProtector;
+global $gBitSystem, $gLibertySystem, $gProtector;
 
 $pRegisterHash = [
 	'package_name' => 'protector',
@@ -32,3 +33,6 @@ if( $gBitSystem->isPackageActive( 'protector' ) ) {
 		'content_icon_tpl' => 'bitpackage:protector/protector_service_icon.tpl',
 	] );
 }
+
+require_once PROTECTOR_PKG_CLASS_PATH .'LibertyProtector.php';
+$gProtector = new LibertyProtector();
