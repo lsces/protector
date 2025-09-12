@@ -22,7 +22,7 @@ class LibertyProtector extends LibertyBase {
 	/**
     * During initialisation, be sure to call our base constructors
 	**/
-	function __construct( $pContentId=0 ) {
+	public function __construct( $pContentId=0 ) {
 		$this->mContentId = $pContentId ;
 		parent::__construct();
 	}
@@ -34,7 +34,7 @@ class LibertyProtector extends LibertyBase {
     *  
     * @param object $pParamHash
 	*/
-	function storeProtection( &$pParamHash ) {
+	public function storeProtection( &$pParamHash ) {
 		global $gBitSystem;
 		if( \Bitweaver\BitBase::verifyId( $pParamHash['protector']['role_id'] ?? 0 ) ) {
 			$this->mDb->query( "DELETE FROM `".BIT_DB_PREFIX."liberty_content_role_map` WHERE `content_id`=?", [ $pParamHash['content_id'] ] );
