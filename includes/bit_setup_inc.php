@@ -27,6 +27,7 @@ if( $gBitSystem->isPackageActive( 'protector' ) ) {
 		'content_store_function' => 'protector_content_store',
 		'comment_store_function' => 'protector_comment_store',
 		'content_expunge_function' => 'protector_content_expunge',
+		'content_verify_access' => 'protector_content_verify_access',
 		'content_list_sql_function' => 'protector_content_list',
 		'content_load_sql_function' => 'protector_content_load',
 		'content_edit_mini_tpl' => 'bitpackage:protector/choose_protection.tpl',
