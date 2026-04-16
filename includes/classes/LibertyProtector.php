@@ -54,7 +54,7 @@ class LibertyProtector extends LibertyBase {
     /**
     * Delete entry(ies) from liberty_content_role_map table with content_id.
     * 
-    * @param object $pContent 
+    * @var object $pContent 
 	*/
 	public function expunge(): bool {
 		if( \Bitweaver\BitBase::verifyId( $this->mContentId ) ) {
@@ -64,10 +64,11 @@ class LibertyProtector extends LibertyBase {
 	}
 
     /**
-    * @return array liberty_content_role_map for selected content_id
-    * Ret -1 for anonymouse if alternatives are not stored
+     * @param integer $ContentId 
+	 * @return array liberty_content_role_map for selected content_id
+     * Ret -1 for anonymouse if alternatives are not stored
 	**/
-	public function getProtectionList( $ContentId=null ) {
+	public function getProtectionList( $ContentId = 0 ) {
 		global $gBitSystem;
 		$ret = [ '-1' <= $ContentId ];
 		if( isset( $ContentId ) ) {
@@ -83,7 +84,7 @@ class LibertyProtector extends LibertyBase {
 function protector_content_list() {
 	global $gBitUser;
 	$userId = $gBitUser->mUserId ?? 0;
-	$roles = array_keys($gBitUser->getRoles( $userId ?? 0, true ));
+	$roles = \array_keys($gBitUser->getRoles( $userId ?? 0, true ));
 	$ret = [
 		'join_sql'  => " LEFT JOIN `" . BIT_DB_PREFIX . "liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `" . BIT_DB_PREFIX . "users_roles_map` purm ON ( purm.`user_id` = " . $userId . " ) AND ( purm.`role_id`=lcrm.`role_id` ) ",
 		'where_sql' => " AND (lcrm.`content_id` IS null OR lcrm.`role_id` IN(" . implode( ',', array_fill( 0, count( $roles ), '?' ) ) . " ) OR purm.`user_id` = ? ) ",
@@ -100,7 +101,7 @@ function protector_content_list() {
 function protector_content_load( $pContent = null ) {
 	global $gBitUser;
 	$userId = $gBitUser->mUserId ?? 0;
-	$roles = array_keys($gBitUser->getRoles( $userId , true ));
+	$roles = \array_keys($gBitUser->getRoles( $userId , true ));
 	protector_content_verify_access( $pContent, $roles );
 	$ret = [
 		'join_sql'  => " LEFT JOIN `" . BIT_DB_PREFIX . "liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `" . BIT_DB_PREFIX . "users_roles_map` purm ON ( purm.`role_id`=lcrm.`role_id` ) ",
@@ -154,7 +155,6 @@ function protector_comment_store( $pContent, $pParamHash ) {
 * function to delete a filtered content element
 * 
 * @param object $pContent
-* @param array $pParamHash 
 **/
 function protector_content_expunge( $pContent = null ) {
 		if( \Bitweaver\BitBase::verifyId( $pContent->mContentId ) ) {
@@ -192,7 +192,7 @@ function protector_content_verify_access( $pContent, $pHash ) {
 				LEFT JOIN `".BIT_DB_PREFIX."liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` urm ON ( urm.`user_id`=". ( $gBitUser->mUserId ?? 0 ) ." ) AND ( urm.`role_id`=lcrm.`role_id` ) 
 				WHERE lc.`content_id` = ?";
 			$ret = $pContent->mDb->getRow( $query, [ $pContent->mContentId ] );
-			if( $ret and is_numeric($ret['is_protected']) and !in_array( $ret['is_protected'], $pHash ) ) {
+			if( $ret and is_numeric($ret['is_protected']) and !\in_array( $ret['is_protected'], $pHash ?? [] ) ) {
 				$gBitSystem->fatalPermission( 'protector permission fail' );
 			} else {
 				if ( $ret and is_numeric($ret['is_protected']) and $ret['is_protected'] == -1 )
