@@ -57,7 +57,7 @@ $pluginParams = [
 	'file_name'          => 'mime.flatdefault.php',
 	// Ensure only one mime.default.php version is active and visible
 	// Set this to true if you want the plugin active right after installation
-	'auto_activate'      => false,
+	'auto_activate'      => true,
 	// Help page on bitweaver.org
 	//'help_page'          => 'MimeHelpPage',
 
@@ -71,8 +71,8 @@ $gLibertySystem->registerPlugin( PLUGIN_MIME_GUID_FLATDEFAULT, $pluginParams );
 /**
  * Sanitise and validate data before it's stored
  *
- * @param array $pStoreRow Hash of data that needs to be stored
- * @param array $pStoreRow['upload'] Hash passed in by $_FILES upload
+ * @param array pStoreRow Hash of data that needs to be stored
+ * @param array pStoreRow['upload'] Hash passed in by $_FILES upload
  * @access public
  * @return bool true on success, false on failure - $pStoreRow['errors'] will contain reason
  */
@@ -133,7 +133,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_verify' )) {
 /**
  * When a file is edited
  *
- * @param array $pStoreRow File data needed to store details in the database - sanitised and generated in the verify function
+ * @param array pStoreRow File data needed to store details in the database - sanitised and generated in the verify function
  * @access public
  * @return bool true on success, false on failure - $pStoreRow['errors'] will contain reason
  */
@@ -200,7 +200,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_update' )) {
 /**
  * Store the data in the database
  *
- * @param array $pStoreRow File data needed to store details in the database - sanitised and generated in the verify function
+ * @param array pStoreRow File data needed to store details in the database - sanitised and generated in the verify function
  * @access public
  * @return bool true on success, false on failure - $pStoreRow['errors'] will contain reason
  */
@@ -249,7 +249,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_store' )) {
 /**
  * Load file data from the database
  *
- * @param array $pFileHash contains all file information
+ * @param array pFileHash contains all file information
  * @access public
  * @return bool true on success, false on failure - ['errors'] will contain reason for failure
  */
@@ -297,7 +297,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_load' )) {
 				//    e.g.: video files are large and the original might be deleted after conversion
 				if( is_file( STORAGE_PKG_PATH.$storageBranch )) {
 					$ret['source_file']   = STORAGE_PKG_PATH.$storageBranch;
-					$ret['source_url']    = STORAGE_PKG_URL.$storageBranch;
+					$ret['source_url']    = LIBERTY_PKG_URL.'download/file/'.$pFileHash['attachment_id'];
 					$ret['last_modified'] = filemtime( $ret['source_file'] );
 					$ret['download_url'] =  $gBitSystem->isFeatureActive( "pretty_urls" ) || $gBitSystem->isFeatureActive( "pretty_urls_extended" )
 						? LIBERTY_PKG_URL."download/file/".$row['attachment_id']
@@ -322,7 +322,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_load' )) {
  * Takes care of the entire download process. Make sure it doesn't die at the end.
  * in this functioin it would be possible to add download resume possibilites and the like
  *
- * @param array $pFileHash Basically the same has as returned by the load function
+ * @param array pFileHash Basically the same has as returned by the load function
  * @access public
  * @return bool true on success, false on failure - $pParamHash['errors'] will contain reason for failure
  */
@@ -345,21 +345,29 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_download' )) {
 			}
 
 			// set up header
-			header( "Cache-Control: no-cache,must-revalidate" );
-			header( "Expires: 0" );
-			header( "Accept-Ranges: bytes" );
-			header( "Pragma: public" );
 			header( "Last-Modified: ".gmdate( "D, d M Y H:i:s T", $pFileHash['last_modified'] ), true, 200 );
 			header( 'Content-Disposition: attachment; filename="'.$pFileHash['file_name'].'"' );
 			header( "Content-type: ".$pFileHash['mime_type'] );
-			header( "Content-Description: File Transfer" );
-			header( "Content-Length: ".filesize( $pFileHash['source_file'] ));
-			header( "Content-Transfer-Encoding: binary" );
-			//header( "Connection: close" );
 
-			@ob_clean();
-			flush();
-			readfile( $pFileHash['source_file'] );
+			if( $gBitSystem->isFeatureActive( 'site_server_type', 'nginx' )) {
+				// Nginx - most efficient
+				$storageUri = str_replace( STORAGE_PKG_PATH, STORAGE_PKG_URL, $pFileHash['source_file'] );
+				header( 'X-Accel-Redirect: '.$storageUri );
+			} elseif( $gBitSystem->isFeatureActive( 'site_server_type', 'apache_xsendfile' )) {
+				// Apache with mod_xsendfile installed
+				header( 'X-Sendfile: '.$pFileHash['download_url'] );
+			} else {
+				// Fallback - any web server, no module needed
+				header( "Cache-Control: no-cache,must-revalidate" );
+				header( "Expires: 0" );
+				header( "Accept-Ranges: bytes" );
+				header( "Pragma: public" );
+				header( "Content-Length: ".filesize( $pFileHash['source_file'] ));
+				header( "Content-Transfer-Encoding: binary" );
+				@ob_clean();
+				flush();
+				readfile( $pFileHash['source_file'] );
+			}
 			$ret = true;
 		} else {
 			$pFileHash['errors']['no_file'] = KernelTools::tra( 'No matching file found.' );
@@ -371,7 +379,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_download' )) {
 /**
  * Nuke data in tables when content is removed
  *
- * @param integer $pAttachmentId The id of the attachment to delete
+ * @param integer pAttachmentId The id of the attachment to delete
  * @access public
  * @return bool true on success, false on failure
  */
@@ -399,7 +407,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_expunge' )) {
 /**
  * Generate branch from Id
  *
- * @param integer $pAttachmentId The id of the attachment to access
+ * @param integer pAttachmentId The id of the attachment to access
  * @access public
  * @return string containing path to storage location for attachment
  */
