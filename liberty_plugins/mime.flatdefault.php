@@ -297,7 +297,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_load' )) {
 				//    e.g.: video files are large and the original might be deleted after conversion
 				if( is_file( STORAGE_PKG_PATH.$storageBranch )) {
 					$ret['source_file']   = STORAGE_PKG_PATH.$storageBranch;
-					$ret['source_url']    = LIBERTY_PKG_URL.'download/file/'.$pFileHash['attachment_id'];
+					$ret['source_url']    = STORAGE_PKG_URL.$storageBranch;
 					$ret['last_modified'] = filemtime( $ret['source_file'] );
 					$ret['download_url'] =  $gBitSystem->isFeatureActive( "pretty_urls" ) || $gBitSystem->isFeatureActive( "pretty_urls_extended" )
 						? LIBERTY_PKG_URL."download/file/".$row['attachment_id']
