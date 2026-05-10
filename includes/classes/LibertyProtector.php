@@ -48,7 +48,7 @@ class LibertyProtector extends LibertyBase {
 				}
 			}
 		}
-		return count( $this->mErrors ) == 0;
+		return \count( $this->mErrors ) == 0;
 	}
 
     /**
@@ -88,7 +88,7 @@ function protector_content_list() {
 	$ret = [
 		'join_sql'  => " LEFT JOIN `" . BIT_DB_PREFIX . "liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `" . BIT_DB_PREFIX . "users_roles_map` purm ON ( purm.`user_id` = " . $userId . " ) AND ( purm.`role_id`=lcrm.`role_id` ) ",
 		'where_sql' => " AND (lcrm.`content_id` IS null OR lcrm.`role_id` IN(" . implode( ',', array_fill( 0, count( $roles ), '?' ) ) . " ) OR purm.`user_id` = ? ) ",
-		'bind_vars' => array_merge( $roles, [ $userId ] ),
+		'bind_vars' => [ ...$roles, $userId ],
 	];
 	return $ret;
 }
@@ -100,15 +100,15 @@ function protector_content_list() {
  */
 function protector_content_load( $pContent = null ) {
 	global $gBitUser;
-	$userId = $gBitUser->mUserId ?? 0;
-	$roles = \array_keys($gBitUser->getRoles( $userId ?? 0, true ));
+	$userId = $gBitUser->mUserId ?? -1;
+	$roles = \array_keys($gBitUser->getRoles( $userId, true ));
 	protector_content_verify_access( $pContent, $roles );
 	$ret = [
 		'join_sql'  => " LEFT JOIN `" . BIT_DB_PREFIX . "liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `" . BIT_DB_PREFIX . "users_roles_map` purm ON ( purm.`role_id`=lcrm.`role_id` ) ",
 		'where_sql' => " AND (lcrm.`content_id` IS null OR lcrm.`role_id` IN(" . implode( ',', array_fill( 0, count( $roles ), '?' ) ) . " ) OR purm.`user_id`=?) ",
 		'bind_vars' => [ $userId ],
 	];
-	$ret['bind_vars'] = array_merge( $roles, $ret['bind_vars'] );
+	$ret['bind_vars'] = [ ...$roles, ...$ret['bind_vars'] ];
 	return $ret;
 }
 
