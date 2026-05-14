@@ -19,6 +19,7 @@
  * setup
  */
 namespace Bitweaver\Liberty;
+
 use Bitweaver\BitBase;
 use Bitweaver\KernelTools;
 
@@ -189,7 +190,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_update' )) {
 				$gBitSystem->mDb->associateUpdate(
 					BIT_DB_PREFIX."liberty_attachments",
 					[ 'attachment_plugin_guid' => $pStoreRow['attachment_plugin_guid'] ],
-					[ 'attachment_id' => $pStoreRow['attachment_id'] ]
+					[ 'attachment_id' => $pStoreRow['attachment_id'] ],
 				);
 			}
 		}
@@ -270,7 +271,7 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_load' )) {
 				$row['name'] = $storageName;
 				$row['type'] = $row['mime_type'];
 				$storageBranch = liberty_mime_get_storage_branch( [ 'attachment_id' => $row['attachment_id'] ] ).$storageName;
-                // this will fetch the correct thumbnails
+				// this will fetch the correct thumbnails
 				$thumbHash['source_file'] = STORAGE_PKG_PATH.$storageBranch;
 				$row['source_file'] = STORAGE_PKG_PATH.$storageBranch;
 				$canThumbFunc = liberty_get_function( 'can_thumbnail' );
@@ -434,7 +435,7 @@ if( !function_exists( '\Bitweaver\Liberty\liberty_mime_get_storage_branch' )) {
 		// *PRIVATE FUNCTION. GO AWAY! DO NOT CALL DIRECTLY!!!
 		global $gBitSystem;
 		$pathParts = [];
-		
+
 		if( $pAttachmentId = BitBase::getParameter( $pParamHash, 'attachment_id' ) ) {
 			$pathParts[] = 'attachments';
 			$pathParts[] = (int)($pAttachmentId % 1000);
@@ -447,8 +448,8 @@ if( !function_exists( '\Bitweaver\Liberty\liberty_mime_get_storage_branch' )) {
 		if( $pPackage = BitBase::getParameter( $pParamHash, 'package' ) ) {
 			$pathParts[] = $pPackage;
 		}
-        $fullPath = implode( '/', $pathParts ).'/';
-        if( BitBase::getParameter( $pParamHash, 'create_dir', true ) ){
+		$fullPath = implode( '/', $pathParts ).'/';
+		if( BitBase::getParameter( $pParamHash, 'create_dir', true ) ){
 			if( !file_exists( STORAGE_PKG_PATH.$fullPath ) ) {
 				KernelTools::mkdir_p( STORAGE_PKG_PATH.$fullPath );
 			}

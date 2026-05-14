@@ -29,7 +29,7 @@ $gBitInstaller->registerPackageInfo( PROTECTOR_PKG_NAME, [
 
 // ### Sequences
 //$sequences = [
-//	'protector_security_id_seq' => [ 'start' => 1 ] 
+//	'protector_security_id_seq' => [ 'start' => 1 ]
 //];
 //$gBitInstaller->registerSchemaSequences( PROTECTOR_PKG_NAME, $sequences );
 

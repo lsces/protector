@@ -20,19 +20,19 @@ namespace Bitweaver\Liberty;
 class LibertyProtector extends LibertyBase {
 
 	/**
-    * During initialisation, be sure to call our base constructors
+	* During initialisation, be sure to call our base constructors
 	**/
 	public function __construct( $pContentId=0 ) {
 		$this->mContentId = $pContentId ;
 		parent::__construct();
 	}
 
-    /**
-    * Update the liberty_content_role_map table with corrected role_id(s).
-    * 
-    * In -1 for anonymouse is not stored, switching content to anonymouse will clear array
-    *  
-    * @param object $pParamHash
+	/**
+	* Update the liberty_content_role_map table with corrected role_id(s).
+	* 
+	* In -1 for anonymouse is not stored, switching content to anonymouse will clear array
+	*  
+	* @param object $pParamHash
 	*/
 	public function storeProtection( &$pParamHash ) {
 		global $gBitSystem;
@@ -51,10 +51,10 @@ class LibertyProtector extends LibertyBase {
 		return \count( $this->mErrors ) == 0;
 	}
 
-    /**
-    * Delete entry(ies) from liberty_content_role_map table with content_id.
-    * 
-    * @var object $pContent 
+	/**
+	* Delete entry(ies) from liberty_content_role_map table with content_id.
+	* 
+	* @var object $pContent 
 	*/
 	public function expunge(): bool {
 		if( \Bitweaver\BitBase::verifyId( $this->mContentId ) ) {
@@ -63,10 +63,10 @@ class LibertyProtector extends LibertyBase {
 		return true;
 	}
 
-    /**
-     * @param integer $ContentId 
+	/**
+	 * @param integer $ContentId 
 	 * @return array liberty_content_role_map for selected content_id
-     * Ret -1 for anonymouse if alternatives are not stored
+	 * Ret -1 for anonymouse if alternatives are not stored
 	**/
 	public function getProtectionList( $ContentId = 0 ) {
 		global $gBitSystem;
@@ -222,7 +222,7 @@ function protector_content_edit( $pContent, $pFunctionParam ) {
 		if ( isset( $pContent->mInfo['parent_id'] ) ) {
 			$serviceHash['protector']['role'] = $gProtector->getProtectionList( $pContent->mInfo['parent_id'] );
 		}
-	}	
+	}
 	if ( isset( $serviceHash['protector']['role'] ) ) { $prot = array_keys( $serviceHash['protector']['role'] ); }
 	$serviceHash['protector']['role_id'] = empty( $prot[0] ) ? -1 : $prot[0];
 	$gBitSmarty->assign( 'serviceHash', $serviceHash );
