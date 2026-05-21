@@ -36,7 +36,7 @@ class LibertyProtector extends LibertyBase {
 	*/
 	public function storeProtection( &$pParamHash ) {
 		global $gBitSystem;
-		if( \Bitweaver\BitBase::verifyId( $pParamHash['protector']['role_id'] ?? 0 ) ) {
+		if( isset( $pParamHash['protector']['role_id'] ) && \Bitweaver\BitBase::verifyId( $pParamHash['content_id'] ) ) {
 			$this->mDb->query( "DELETE FROM `".BIT_DB_PREFIX."liberty_content_role_map` WHERE `content_id`=?", [ $pParamHash['content_id'] ] );
 			if( $gBitSystem->isFeatureActive( 'protector_single_role' ) ) {
 				if( $pParamHash['protector']['role_id'] != -1 )
@@ -44,7 +44,7 @@ class LibertyProtector extends LibertyBase {
 			} else {
 				foreach( $pParamHash['protector']['role_id'] AS $roleId ) {
 					if( $roleId != -1 )
-					$this->mDb->query( "INSERT INTO `".BIT_DB_PREFIX."liberty_content_role_map` ( `role_id`, `content_id` ) VALUES ( ?, ? )", [ $roleId, $pParamHash['content_id'] ] );
+						$this->mDb->query( "INSERT INTO `".BIT_DB_PREFIX."liberty_content_role_map` ( `role_id`, `content_id` ) VALUES ( ?, ? )", [ $roleId, $pParamHash['content_id'] ] );
 				}
 			}
 		}
@@ -69,9 +69,8 @@ class LibertyProtector extends LibertyBase {
 	 * Ret -1 for anonymouse if alternatives are not stored
 	**/
 	public function getProtectionList( $ContentId = 0 ) {
-		global $gBitSystem;
-		$ret = [ '-1' <= $ContentId ];
-		if( isset( $ContentId ) ) {
+		$ret = [];
+		if( \Bitweaver\BitBase::verifyId( $ContentId ) ) {
 			$ret = $this->mDb->GetAssoc( "SELECT `role_id`, `content_id` FROM `".BIT_DB_PREFIX."liberty_content_role_map` WHERE `content_id`=?", [ $ContentId ] );
 		}
 		return $ret;
