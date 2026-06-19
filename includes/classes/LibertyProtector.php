@@ -181,6 +181,12 @@ function protector_content_display( &$pContent, &$pParamHash ) {
 function protector_content_verify_access( $pContent, $pHash ) {
 	global $gBitUser, $gBitSystem;
 
+	// Called via invokeServices with no argument; derive roles from current user
+	if( $pHash === null ) {
+		$userId = $gBitUser->mUserId ?? -1;
+		$pHash = \array_keys( $gBitUser->getRoles( $userId, true ) ) ?: [-1];
+	}
+
 	$error = null;
 	if ( $pContent && $pContent->isValid() ) {
 		if( !$pContent->verifyId( $pContent->mContentId ) ) {
