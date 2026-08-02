@@ -188,21 +188,17 @@ function protector_content_verify_access( $pContent, $pHash ) {
 	}
 
 	$error = null;
-	if ( $pContent && $pContent->isValid() ) {
-		if( !$pContent->verifyId( $pContent->mContentId ) ) {
-		}
-		if( $pContent->verifyId( $pContent->mContentId ) ) {
-			$query = "SELECT lc.`content_id`, lcrm.`role_id` as `is_protected`
-				FROM `".BIT_DB_PREFIX."liberty_content` lc 
-				LEFT JOIN `".BIT_DB_PREFIX."liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` urm ON ( urm.`user_id`=". ( $gBitUser->mUserId ?? 0 ) ." ) AND ( urm.`role_id`=lcrm.`role_id` ) 
-				WHERE lc.`content_id` = ?";
-			$ret = $pContent->mDb->getRow( $query, [ $pContent->mContentId ] );
-			if( $ret and is_numeric($ret['is_protected']) and !\in_array( $ret['is_protected'], $pHash ?? [] ) ) {
-				$gBitSystem->fatalPermission( 'protector permission fail' );
-			} else {
-				if ( $ret and is_numeric($ret['is_protected']) and $ret['is_protected'] == -1 )
-					$pContent->mViewPublic = 'public';
-			}
+	if ( $pContent && $pContent->verifyId( $pContent->mContentId ) ) {
+		$query = "SELECT lc.`content_id`, lcrm.`role_id` as `is_protected`
+			FROM `".BIT_DB_PREFIX."liberty_content` lc
+			LEFT JOIN `".BIT_DB_PREFIX."liberty_content_role_map` lcrm ON ( lc.`content_id`=lcrm.`content_id` ) LEFT OUTER JOIN `".BIT_DB_PREFIX."users_roles_map` urm ON ( urm.`user_id`=". ( $gBitUser->mUserId ?? 0 ) ." ) AND ( urm.`role_id`=lcrm.`role_id` )
+			WHERE lc.`content_id` = ?";
+		$ret = $pContent->mDb->getRow( $query, [ $pContent->mContentId ] );
+		if( $ret and is_numeric($ret['is_protected']) and !\in_array( $ret['is_protected'], $pHash ?? [] ) ) {
+			$gBitSystem->fatalPermission( 'protector permission fail' );
+		} else {
+			if ( $ret and is_numeric($ret['is_protected']) and $ret['is_protected'] == -1 )
+				$pContent->mViewPublic = 'public';
 		}
 	}
 	return $error;
