@@ -6,6 +6,7 @@ $pRegisterHash = [
 	'package_name' => 'protector',
 	'package_path' => dirname( dirname( __FILE__ ) ).'/',
 	'service' => LIBERTY_SERVICE_ACCESS_CONTROL,
+	'required_package'=> true,
 ];
 
 // fix to quieten down VS Code which can't see the dynamic creation of these ...
