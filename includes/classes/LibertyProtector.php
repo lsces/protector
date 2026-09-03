@@ -39,11 +39,16 @@ class LibertyProtector extends LibertyBase {
 		if( isset( $pParamHash['protector']['role_id'] ) && \Bitweaver\BitBase::verifyId( $pParamHash['content_id'] ) ) {
 			$this->mDb->query( "DELETE FROM `".BIT_DB_PREFIX."liberty_content_role_map` WHERE `content_id`=?", [ $pParamHash['content_id'] ] );
 			if( $gBitSystem->isFeatureActive( 'protector_single_role' ) ) {
-				if( $pParamHash['protector']['role_id'] != -1 )
+				// is_numeric guard added 2026-09-03 - a null role_id was reaching this INSERT,
+				// fatalling on liberty_content_role_map's NOT NULL column. Real source was
+				// fisheye/edit.php's own GetOne()!==false check (GetOne() returns null, not
+				// false, on no matching row - fixed there too), but this guard stays as
+				// defense-in-depth against any other caller making the same mistake.
+				if( is_numeric( $pParamHash['protector']['role_id'] ) && $pParamHash['protector']['role_id'] != -1 )
 					$this->mDb->query( "INSERT INTO `".BIT_DB_PREFIX."liberty_content_role_map` ( `role_id`, `content_id` ) VALUES ( ?, ? )", [ $pParamHash['protector']['role_id'], $pParamHash['content_id'] ] );
 			} else {
 				foreach( $pParamHash['protector']['role_id'] AS $roleId ) {
-					if( $roleId != -1 )
+					if( is_numeric( $roleId ) && $roleId != -1 )
 						$this->mDb->query( "INSERT INTO `".BIT_DB_PREFIX."liberty_content_role_map` ( `role_id`, `content_id` ) VALUES ( ?, ? )", [ $roleId, $pParamHash['content_id'] ] );
 				}
 			}
