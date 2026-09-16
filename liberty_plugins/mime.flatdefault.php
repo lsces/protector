@@ -390,10 +390,24 @@ if( !function_exists( '\Bitweaver\Liberty\mime_default_expunge' )) {
 		$ret = false;
 		if( BitBase::verifyId( $pAttachmentId )) {
 			if( $fileHash = LibertyMime::loadAttachment( $pAttachmentId )) {
-				if( $gBitUser->isAdmin() || $gBitUser->mUserId == $fileHash['user_id'] && isset( $fileHash['source_file'] ) && !empty( $fileHash['source_file'] )) {
-					// make sure this is a valid storage directory before removing it
-					if( preg_match( "#^".realpath( STORAGE_PKG_PATH )."/attachments/\d+/\d+/#", $fileHash['source_file'] ) && is_file( $fileHash['source_file'] )) {
-						KernelTools::unlink_r( dirname( $fileHash['source_file'] ));
+				// a source_file to clean up is optional - only gates the file-cleanup sub-step
+				// below, not authorization or the DB delete
+				if( $gBitUser->isAdmin() || $gBitUser->mUserId == $fileHash['user_id'] ) {
+					if( isset( $fileHash['source_file'] ) && !empty( $fileHash['source_file'] )) {
+						// make sure this is a valid storage directory before removing it
+						if( preg_match( "#^".realpath( STORAGE_PKG_PATH )."/attachments/\d+/\d+/#", $fileHash['source_file'] ) && is_file( $fileHash['source_file'] )) {
+							KernelTools::unlink_r( dirname( $fileHash['source_file'] ));
+						}
+					}
+					// the attachment's own storage directory is purely a function of $pAttachmentId
+					// (see liberty_mime_get_storage_branch()) - clean it up unconditionally, independent
+					// of liberty_files/source_file tracking, since generated thumbnails live there
+					// without ever being a tracked source_file themselves
+					$attachDir = STORAGE_PKG_PATH.\Bitweaver\Liberty\liberty_mime_get_storage_branch(
+						[ 'attachment_id' => $pAttachmentId, 'create_dir' => false ]
+					);
+					if( is_dir( $attachDir ) ) {
+						KernelTools::unlink_r( $attachDir );
 					}
 					$query = "DELETE FROM `".BIT_DB_PREFIX."liberty_files` WHERE `file_id` = ?";
 					$gBitSystem->mDb->query( $query, [ $fileHash['foreign_id'] ] );
